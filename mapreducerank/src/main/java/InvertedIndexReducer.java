@@ -1,92 +1,124 @@
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by dmyan on 17-10-26.
  */
-public class InvertedIndexReducer extends Reducer<Text, Text, Text, Text> {
+public class InvertedIndexReducer extends Reducer<Text, IntWritable, Text, Text> {
 
-
-    @Override
-    protected void reduce(Text key, Iterable<Text> values,
-                          Context context) throws IOException,InterruptedException {
-
-/*        Map<String,Integer> map = new HashMap<String,Integer>();
-        int fren = 0;
-        int sum ;
-        String fileName;
-        int num;
-        for (Text val : values) {
-            fileName = val.toString().split(":")[0];
-            num = Integer.parseInt(val.toString().split(":")[1].trim());
-            fren+=num;
-            if(map.containsKey(fileName)){
-                map.put(fileName,num+map.get(fileName));
-            }else {
-                map.put(fileName,num);
+    private static List<String> postingsList = new ArrayList<String>();
+    private static Text item = new Text(" ");
+    //private static Configuration hbase_conf = HBaseConfiguration.create();
+    //private static HBaseAdmin admin;
+/*    private void createTable(String tableName,String colFamilies[]) throws IOException {
+        if(!admin.tableExists(Bytes.toBytes(tableName)))
+        {
+            HTableDescriptor tableDescriptor=new HTableDescriptor(tableName);
+            int len = colFamilies.length;
+            for(int i=0;i<len;i++){
+                HColumnDescriptor columnDescriptor=new HColumnDescriptor(Bytes.toBytes(colFamilies[i]));
+                tableDescriptor.addFamily(columnDescriptor);
             }
-            //sum += val.get();
-        }
-        sum = map.size();
-        key = new Text(key.toString()+"\t"+fren/(sum*1.0));
-        StringBuilder all = new StringBuilder();
-        for(String k :map.keySet()){
-            all.append(k+":"+map.get(k)+";");
-        }
-        Text word = new Text();*/
 
-        StringBuilder all = new StringBuilder();
-        int fren = 0;
-        int sum = 0;
-        int index;
-        Iterator<Text> iter = values.iterator();
-        String str;
-        if(iter.hasNext()){
-            str = iter.next().toString();
-            index = str.indexOf(":");
-            fren+=Integer.parseInt(str.substring(index+1));
-            sum++;
-            all.append(str);
-        }
-        while(iter.hasNext()){
-            all.append(";");
-            str = iter.next().toString();
-            index = str.indexOf(":");
-            fren+=Integer.parseInt(str.substring(index+1));
-            sum++;
-            all.append(str);
-        }
-        context.write(key,new Text(new DecimalFormat("######0.00").format(fren/(sum*1.0))+","+all.toString()));
+            admin.createTable(tableDescriptor);
+            System.out.println("创建表成功！");
 
-    }
-
-    /*@Override
-    public void run(Reducer<Text, IntWritable, Text, Text>.Context context) throws IOException, InterruptedException {
-        super.setup(context);
-        try{
-            while(context.nextKey()){
-
-                Text currentKey = context.getCurrentKey();
-                Log.info(context.getJobName() + " " + context.getJobID() + currentKey.toString());
-                String fileName = currentKey.toString().split(",")[1];
-                Iterable<IntWritable> currentValues = context.getValues();
-                List<Text> list = new ArrayList<Text>();
-                for(IntWritable val:currentValues){
-                    list.add(new Text(fileName+":"+val.get()));
-                }
-                reduce(new Text(currentKey.toString().split(",")[0]),list,context);
-
-            }
-            Iterator<IntWritable> iter = context.getValues().iterator();
-            if (iter instanceof ReduceContext.ValueIterator) {
-                ((ReduceContext.ValueIterator)iter).resetBackupStore();
-            }
-        }finally{
-            super.cleanup(context);
         }
     }*/
+/*
+    private void addData(String tableName,String rowKey,String family,String qualifier,String value) throws IOException {
+*//*        Connection conn = ConnectionFactory.createConnection(hbase_conf);
+        // 获取表
+        HTable table = (HTable) conn.getTable(TableName.valueOf(tableName));
+        //HTable table = new HTable(hbase_conf,tableName);
+        //HBaseAdmin admin=new HBaseAdmin(hbase_conf);
+        Put put = new Put(rowKey.getBytes());
+        put.addColumn(family.getBytes(),qualifier.getBytes(),value.getBytes());
+        table.put(put);*//*
+        try{
+            //HTable table = new HTable(hbase_conf,tableName);
+            Connection conn = ConnectionFactory.createConnection(hbase_conf);
+            // 获取表
+            HTable table = (HTable) conn.getTable(TableName.valueOf(tableName));
+            Put put = new Put(Bytes.toBytes(rowKey));
+            put.addColumn(Bytes.toBytes(family),Bytes.toBytes(qualifier),Bytes.toBytes(value));
+            table.put(put);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }*/
+    @Override
+    protected void reduce(Text key, Iterable<IntWritable> values,
+                          Context context) throws IOException,InterruptedException {
+        Text wordpre;
+        Text word = new Text();
+        int sum = 0;
+        wordpre = new Text(key.toString().split(",")[0]);
+        String fileName = key.toString().split(",")[1];
+        for(IntWritable value : values){
+            sum += value.get();
+        }
+        word.set(fileName+":"+sum);//文件名和总数
+        //postingsList.add();
+        if(!item.equals(wordpre)&&!item.equals(" ")){
+            long frens = 0;
+            double fileCount = 0.0;
+            StringBuilder all = new StringBuilder();
+            Iterator<String> iter = postingsList.iterator();
+            String str ;
+            if(iter.hasNext()){
+                str = iter.next();
+                all.append(str);
+                fileCount++;
+                frens += Long.parseLong(str.substring(str.indexOf(":")+1));
+            }
+            while(iter.hasNext()){
+                str = iter.next();
+                all.append(";");
+                fileCount++;
+                frens += Long.parseLong(str.substring(str.indexOf(":")+1));
+                all.append(str);
+            }
+            if(frens>0){
+                //addData("Wuxia",item.toString(),"count","freqs",String.format("%.2f",frens/fileCount)+"");
+                context.write(item,new Text(String.format("%.2f",frens/fileCount)+","+all.toString()));
+            }
+            postingsList = new ArrayList<String>();
+        }
+        item.set(wordpre);
+        postingsList.add(word.toString());
+
+    }
+    @Override
+    public void cleanup(Context context) throws IOException, InterruptedException {
+        long frens = 0;
+        double fileCount = 0.0;
+        StringBuilder all = new StringBuilder();
+        Iterator<String> iter = postingsList.iterator();
+        String str ;
+        if(iter.hasNext()){
+            str = iter.next();
+            all.append(str);
+            fileCount++;
+            frens += Long.parseLong(str.substring(str.indexOf(":")+1));
+        }
+        while(iter.hasNext()){
+            str = iter.next();
+            all.append(";");
+            fileCount++;
+            frens += Long.parseLong(str.substring(str.indexOf(":")+1));
+            all.append(str);
+        }
+        if(frens>0){
+            //addData("Wuxia",item.toString(),"count","freqs",String.format("%.2f",frens/fileCount)+"");
+            context.write(item,new Text(String.format("%.2f",frens/fileCount)+","+all.toString()));
+        }
+    }
+
 }
