@@ -2,3 +2,7 @@
 */out/
 graphTriangleCount/.idea/
 mapreducerank/.idea/
+graphTriangleCount/out/
+mapreducerank/out/
+graphTriangleCount/target/
+mapreducerank/target/
