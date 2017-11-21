@@ -9,6 +9,6 @@
 
 * graphTriangleCountAND社交网络三角形计数（And）
 
-> IF ( A→B) OR (B→A) THEN A-B
+> IF ( A→B) AND (B→A) THEN A-B
 
 * mapreducerank带词频属性的文档倒排索引
