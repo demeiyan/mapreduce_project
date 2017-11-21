@@ -1,4 +1,3 @@
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -19,7 +18,10 @@ public class Mapper1 extends Mapper<LongWritable,Text,Text,Text> {
             String tmp = idA;
             idA = idB;
             idB = tmp;
+            context.write(new Text(idA+"-"+idB),new Text("link"));
+        }else if(idA.compareTo(idB)<0){
+            context.write(new Text(idA+"-"+idB),new Text("link"));
         }
-        context.write(new Text(idA+"-"+idB),new Text("link"));
+
     }
 }

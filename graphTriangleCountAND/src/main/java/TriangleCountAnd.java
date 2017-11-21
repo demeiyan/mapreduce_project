@@ -9,13 +9,14 @@ import org.apache.hadoop.fs.Path;
 import java.io.IOException;
 
 /**
- * created by dmyan on 17-11-17
+ * created by dmyan on 17-11-21
  */
-public class TriangleCount {
+public class TriangleCountAnd {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        String[] otherArgs = new GenericOptionsParser(args).getRemainingArgs();
+
         Job job1 = Job.getInstance();
-        job1.setJarByClass(TriangleCount.class);
+        job1.setJobName("Job1");
+        job1.setJarByClass(TriangleCountAnd.class);
         job1.setMapperClass(Mapper1.class);
         job1.setReducerClass(Reducer1.class);
         job1.setMapOutputKeyClass(Text.class);
@@ -29,7 +30,8 @@ public class TriangleCount {
 
 
         Job job2 = Job.getInstance();
-        job2.setJarByClass(TriangleCount.class);
+        job2.setJobName("Job2");
+        job2.setJarByClass(TriangleCountAnd.class);
         job2.setMapperClass(Mapper2.class);
         job2.setReducerClass(Reducer2.class);
         job2.setMapOutputKeyClass(Text.class);
@@ -42,7 +44,8 @@ public class TriangleCount {
         job2.waitForCompletion(job1.isComplete());
 
         Job job3 = Job.getInstance();
-        job3.setJarByClass(TriangleCount.class);
+        job3.setJobName("Job3");
+        job3.setJarByClass(TriangleCountAnd.class);
         job3.setMapperClass(Mapper3.class);
         job3.setReducerClass(Reducer3.class);
         job3.setMapOutputKeyClass(Text.class);
@@ -51,7 +54,35 @@ public class TriangleCount {
         job3.setOutputValueClass(Text.class);
 
         FileInputFormat.addInputPath(job3,new Path(args[1]+"/tmp/step2/part-r-00000"));
-        FileOutputFormat.setOutputPath(job3,new Path("gplus_resultOutput"));
+        FileOutputFormat.setOutputPath(job3,new Path(args[1]+"/tmp/step3"));
         job3.waitForCompletion(job2.isComplete());
+
+        Job job4 = Job.getInstance();
+        job4.setJobName("Job4");
+        job4.setJarByClass(TriangleCountAnd.class);
+        job4.setMapperClass(Mapper4.class);
+        job4.setReducerClass(Reducer4.class);
+        job4.setMapOutputKeyClass(Text.class);
+        job4.setMapOutputValueClass(Text.class);
+        job4.setOutputKeyClass(Text.class);
+        job4.setOutputValueClass(Text.class);
+
+        FileInputFormat.addInputPath(job4,new Path(args[1]+"/tmp/step3/part-r-00000"));
+        FileOutputFormat.setOutputPath(job4,new Path(args[1]+"/tmp/step4"));
+        job4.waitForCompletion(job3.isComplete());
+
+        Job job5 = Job.getInstance();
+        job5.setJobName("Job5");
+        job5.setJarByClass(TriangleCountAnd.class);
+        job5.setMapperClass(Mapper5.class);
+        job5.setReducerClass(Reducer5.class);
+        job5.setMapOutputKeyClass(Text.class);
+        job5.setMapOutputValueClass(Text.class);
+        job5.setOutputKeyClass(Text.class);
+        job5.setOutputValueClass(Text.class);
+
+        FileInputFormat.addInputPath(job5,new Path(args[1]+"/tmp/step4/part-r-00000"));
+        FileOutputFormat.setOutputPath(job5,new Path("gplus_CountAnd"));
+        job5.waitForCompletion(job4.isComplete());
     }
 }
