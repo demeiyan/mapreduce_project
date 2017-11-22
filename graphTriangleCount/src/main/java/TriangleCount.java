@@ -1,4 +1,3 @@
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.Job;
@@ -13,17 +12,16 @@ import java.io.IOException;
  */
 public class TriangleCount {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        String[] otherArgs = new GenericOptionsParser(args).getRemainingArgs();
         Job job1 = Job.getInstance();
         job1.setJarByClass(TriangleCount.class);
-        job1.setMapperClass(Mapper1.class);
-        job1.setReducerClass(Reducer1.class);
+        job1.setMapperClass(Mapper3.class);
+        job1.setReducerClass(Reducer3.class);
         job1.setMapOutputKeyClass(Text.class);
         job1.setMapOutputValueClass(Text.class);
         job1.setOutputKeyClass(Text.class);
         job1.setOutputValueClass(Text.class);
 
-        FileInputFormat.addInputPath(job1,new Path(args[0]+"/gplus_combined.unique.txt"));
+        FileInputFormat.addInputPath(job1,new Path(args[0]));
         FileOutputFormat.setOutputPath(job1,new Path(args[1]+"/tmp/step1"));
         job1.waitForCompletion(true);
 

@@ -16,6 +16,7 @@ public class Mapper3 extends Mapper<LongWritable,Text,Text,Text>{
             String[] line = value.toString().split("\t");
             if(line.length >=2)
             context.write(new Text(line[0].trim()),new Text(line[1].trim()));
+            context.progress();
         }
     }
 }
