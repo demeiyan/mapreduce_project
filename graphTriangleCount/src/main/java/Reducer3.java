@@ -7,7 +7,7 @@ import java.io.IOException;
  * created by dmyan on 17-11-17
  */
 public class Reducer3 extends Reducer<Text, Text, Text, Text> {
-    private static  long  result = 0;
+    ///private static  long  result = 0;
     @Override
     protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
         long count = 0;
@@ -23,12 +23,14 @@ public class Reducer3 extends Reducer<Text, Text, Text, Text> {
             }
 
         }
-        if(flag)result += count;
+        if(flag){
+            context.write(new Text(""),new Text(count+""));
+        }
         context.progress();
     }
 
-    @Override
+/*    @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
         context.write(new Text("The sum of triangle in social networks is"),new Text(result+""));
-    }
+    }*/
 }

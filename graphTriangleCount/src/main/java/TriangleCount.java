@@ -14,17 +14,19 @@ public class TriangleCount {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Job job1 = Job.getInstance();
         job1.setJarByClass(TriangleCount.class);
-        job1.setMapperClass(Mapper3.class);
-        job1.setReducerClass(Reducer3.class);
+        job1.setMapperClass(Mapper1.class);
+        job1.setReducerClass(Reducer1.class);
         job1.setMapOutputKeyClass(Text.class);
         job1.setMapOutputValueClass(Text.class);
         job1.setOutputKeyClass(Text.class);
         job1.setOutputValueClass(Text.class);
 
         FileInputFormat.addInputPath(job1,new Path(args[0]));
+        //FileInputFormat.addInputPath(job1,new Path(args[0]+"/tmp/step2/part-r-00000"));
         FileOutputFormat.setOutputPath(job1,new Path(args[1]+"/tmp/step1"));
+        //FileOutputFormat.setOutputPath(job1,new Path(args[1]));
         job1.waitForCompletion(true);
-
+        //System.exit(job1.waitForCompletion(true)?0:1);
 
         Job job2 = Job.getInstance();
         job2.setJarByClass(TriangleCount.class);
