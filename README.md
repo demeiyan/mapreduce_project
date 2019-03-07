@@ -15,4 +15,4 @@
 * mapreducerank带词频属性的文档倒排索引
 
 
-  [1]: https://github.com/demeiyan/mapreduce_project/triangleCount.PNG
+  [1]: https://github.com/demeiyan/mapreduce_project/blob/master/triangleCount.PNG
